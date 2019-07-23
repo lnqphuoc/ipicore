@@ -1,0 +1,58 @@
+server:
+  port: 10003
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:10002/eureka/
+
+spring:
+  cloud:
+    loadbalancer:
+      retry:
+        enabled: true
+        
+logging:
+  pattern: 
+    console: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} %m%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} %m%n"
+  #file: zuul.log
+  file: /home/stackops/proxy/log.log
+              
+zuul:
+  routes:
+    cmsservice:
+      path: /cmsservice/**
+      serviceId: cmsservice
+      stripPrefix: true
+  retryable: true
+  #ribbonIsolationStrategy:THREAD
+  ribbon:
+    eager-load:
+      enabled: true
+
+hystrix:
+  command:
+    cmsservice:
+      execution:
+        isolation:
+          strategy: THEARD
+          thread:
+            timeoutInMilliseconds: 120000
+
+cmsservice:
+  ribbon:
+    #NIWSServerListClassName: com.netflix.loadbalancer.ConfigurationBasedServerList
+    #listOfServers: http://localhost:33001,http://localhost:33002,http://61.28.226.134:33003
+    #ConnectTimeout: 10000
+    #ReadTimeout: 10000
+    MaxTotalHttpConnections: 2000
+    MaxConnectionsPerHost: 1000
+    maxAutoRetries: 3
+    MaxAutoRetriesNextServer: 3
+    OkToRetryOnAllOperations: true
+    ReadTimeout: 120000
+    ConnectTimeout: 10000
+    retryableStatusCodes: 404,502
+    eureka:
+      enabled: true
